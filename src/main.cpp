@@ -12,43 +12,41 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include "Knapsack.h"
 
 using namespace std;
-
-struct Knapsack {
-	int label;
-	int value;
-	int weight;
-	vector<int> conflits;
-};
 
 //funções
 int getValue(vector<Knapsack> items);
 int getWeight(vector<Knapsack> items);
-void createProblem(vector<Knapsack> &kc, vector<string> fileslist);
+void createProblem(vector<Knapsack> * kc, vector<string> fileslist);
 
 int main() {
 	vector<Knapsack> kc;
+    vector<string> fileslist;
 	int capacity;
-	char* arq = "/home/andre/Documentos/knpconf/kc20.txt";
+	string arq = "knpconf/kc20.txt";
 	ifstream readlist;
-	ofstream resultList;
-	vector<string> fileslist;
 	string lineRead;
 
 	readlist.open(arq);
 
 	while (getline(readlist, lineRead)) {
 		stringstream ss;
-		ss << lineRead;
+		ss << lineRead << endl;
 		fileslist.push_back(ss.str());
 	}
 
 	readlist.close();
-	capacity = stoi(fileslist[1]);
-	createProblem(kc, fileslist);
 
-	cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
+	capacity = stoi(fileslist[1]);
+	createProblem(&kc, fileslist);
+
+    for (int i = 0; i < kc.size(); i++)
+    {
+        cout << kc[i].weight << endl;
+    }
+
 	return 0;
 }
 
@@ -68,7 +66,7 @@ int getValue(vector<Knapsack> items) {
 	return totalValue;
 }
 
-void createProblem(vector<Knapsack> &kc, vector<string> fileslist) {
+void createProblem(vector<Knapsack> * kc, vector<string> fileslist) {
 	Knapsack item;
 
 	//armazenamento na lista
@@ -82,24 +80,24 @@ void createProblem(vector<Knapsack> &kc, vector<string> fileslist) {
 		item.value = stoi(fileslist[count]);
 		count++;
 		i++;
-		kc.push_back(item);
+		kc->push_back(item);
 	}
 
 	//armazena pesos
 	i = 0;
 	while (i < size) {
-		kc[i].weight = stoi(fileslist[count]);
+		kc->at(i).weight = stoi(fileslist[count]);
 		count++;
 		i++;
 	}
 
 	//armazena conflitos
-	for (int j = 0; j < kc.size(); j++) {
+	for (int j = 0; j < kc->size(); j++) {
 		i = 0;
 		int numConflits = stoi(fileslist[count]);
 		count++;
 		while (i < numConflits) {
-			kc[j].conflits.push_back(stoi(fileslist[count]));
+			kc->at(j).conflits.push_back(stoi(fileslist[count]));
 			count++;
 			i++;
 		}

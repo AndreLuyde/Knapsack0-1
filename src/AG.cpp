@@ -7,30 +7,63 @@
 
 #include "AG.h"
 
-AG::AG(vector<Knapsack> kc) {
+AG::AG(vector<Knapsack> kc, int sizePopulation, clock_t beginTime,
+		double endTime) {
 	setKc(kc);
+	setSizePopulation(sizePopulation);
+	setCrossingProbability(0.9);
+	setMutationProbability(1 / sizePopulation);
+	setBeginTime(beginTime);
+	setEndTime(endTime);
 }
 
 AG::~AG() {
 	// TODO Auto-generated destructor stub
 }
 
-void AG::evolucionaryClicle(vector<Solution> population, int sizePopulation){
+void AG::evolucionaryClicle(vector<Solution> population, int sizePopulation) {
+	double currentTime = 0;
 
 	//vetor para armazenar os filhos
 	vector<Solution> newSolutions;
 
 	//calcula o fitness da população
-	for(int i=0; i< population.size(); i++){
+	for (int i = 0; i < population.size(); i++) {
 		fitness(population[i]);
 	}
+	do {
 
-	while(newSolutions.size() < sizePopulation/3){
-//		float randUniform = uniform_real_distribution(0.f,1.f);
+		while (newSolutions.size() < sizePopulation / 3) {
 
-		//verifica a probabilidade de cruzamento
-//		if(getCrossingProbability() )
-	}
+			int seed =
+					std::chrono::system_clock::now().time_since_epoch().count();
+			static default_random_engine gen(seed);
+			normal_distribution<double> dist(0.0, 1.0);
+			double probability = dist(gen);
+
+			//verifica a probabilidade de cruzamento
+			if (probability < getCrossingProbability()) {
+				int rand1 = rand() % (population.size());
+				int rand2 = rand() % (population.size());
+				newSolutions.push_back(
+						crossing2Cut(population[rand1], population[rand2]));
+			}
+
+			//verifica a probabilidade de mutação
+			if (probability < getMutationProbability()) {
+				int rand1 = rand() % (population.size());
+				newSolutions.push_back(mutation(population[rand1]));
+			}
+		}
+
+		//seleção para próxima geração
+		population = tournament(population, newSolutions, sizePopulation);
+		setGeneration(getGeneration() + 1);
+
+		//atualiza critério de parada
+		clock_t clockEnd = clock();
+		currentTime = ((double) clockEnd - getBeginTime()) / ((double) CLOCKS_PER_SEC);
+	} while (currentTime < getEndTime()); //condição de tempo
 }
 
 Solution AG::crossing1Cut(Solution solution1, Solution solution2) {
@@ -77,18 +110,20 @@ Solution AG::crossing2Cut(Solution solution1, Solution solution2) {
 	return solutionGenerated;
 }
 
-void AG::mutation(Solution &solution){
+Solution AG::mutation(Solution solution) {
 	int randNum = rand() % (solution.getSolution().size());
 	vector<int> sol = solution.getSolution();
-	if(sol[randNum] == 0){
+	if (sol[randNum] == 0) {
 		sol[randNum] = 1;
-	}else{
+	} else {
 		sol[randNum] = 0;
 	}
 	solution.setSolution(sol);
+	return solution;
 }
 
-vector<Solution> AG::tournament(vector<Solution> population, vector<Solution> newSolutions, int sizePopulation) {
+vector<Solution> AG::tournament(vector<Solution> population,
+		vector<Solution> newSolutions, int sizePopulation) {
 	vector<Solution> finalPopulation;
 	int rand1;
 	int rand2;
@@ -99,8 +134,9 @@ vector<Solution> AG::tournament(vector<Solution> population, vector<Solution> ne
 	while (finalPopulation.size() < sizePopulation) {
 		rand1 = rand() % (population.size());
 		rand2 = rand() % (population.size());
-		if(!population[rand1].isChecked() && population[rand2].isChecked()){
-			finalPopulation.push_back(competition(population[rand1], population[rand2]));
+		if (!population[rand1].isChecked() && population[rand2].isChecked()) {
+			finalPopulation.push_back(
+					competition(population[rand1], population[rand2]));
 		}
 	}
 	return finalPopulation;

@@ -13,6 +13,8 @@
 #include <list>
 #include <vector>
 #include <algorithm>
+#include <random>
+#include <chrono>
 using namespace std;
 
 struct Knapsack {
@@ -25,7 +27,7 @@ struct Knapsack {
 class AG{
 
 public:
-	AG(vector<Knapsack> kc);
+	AG(vector<Knapsack> kc, int sizePopulation, clock_t timeBegin, double timeEnd);
 
 	virtual ~AG();
 
@@ -33,7 +35,7 @@ public:
 	Solution crossing2Cut(Solution solution1, Solution solution2);
 	vector<Solution> tournament(vector<Solution> population, vector<Solution> newSolutions, int sizePopulation);
 	int fitness(Solution &solution);
-	void mutation(Solution &solution);
+	Solution mutation(Solution solution);
 	bool checkConflits(Solution &solution);
 	Solution competition(Solution solution1, Solution solution2);
 	void evolucionaryClicle(vector<Solution> population, int sizePopulation);
@@ -78,11 +80,38 @@ public:
 		this->knapsackCapacity = knapsackCapacity;
 	}
 
+	int getGeneration() const {
+		return generation;
+	}
+
+	void setGeneration(int generation) {
+		this->generation = generation;
+	}
+
+	double getEndTime() const {
+		return endTime;
+	}
+
+	void setEndTime(double endTime) {
+		this->endTime = endTime;
+	}
+
+	clock_t getBeginTime() const {
+		return beginTime;
+	}
+
+	void setBeginTime(clock_t beginTime) {
+		this->beginTime = beginTime;
+	}
+
 private:
 	int sizePopulation;
 	int crossingProbability;
 	int mutationProbability;
 	int knapsackCapacity;
+	int generation = 0;
+	clock_t beginTime;
+	double endTime;
 	vector<Knapsack> kc;
 
 };
