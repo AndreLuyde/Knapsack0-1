@@ -36,9 +36,18 @@ public:
 		this->solution = solution;
 	}
 
+	bool isChecked() const {
+		return checked;
+	}
+
+	void setChecked(bool checked) {
+		this->checked = checked;
+	}
+
 private:
 	vector<int> solution;
 	int fitness;
+	bool checked;
 };
 
 #endif /* SOLUTION_H_ */

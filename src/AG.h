@@ -33,8 +33,10 @@ public:
 	Solution crossing2Cut(Solution solution1, Solution solution2);
 	vector<Solution> tournament(vector<Solution> population, vector<Solution> newSolutions, int sizePopulation);
 	int fitness(Solution &solution);
-	void mutationByChange();
+	void mutation(Solution &solution);
 	bool checkConflits(Solution &solution);
+	Solution competition(Solution solution1, Solution solution2);
+	void evolucionaryClicle(vector<Solution> population, int sizePopulation);
 
 	int getCrossingProbability() const {
 		return crossingProbability;
