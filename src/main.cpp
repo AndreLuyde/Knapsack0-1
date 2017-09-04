@@ -13,6 +13,7 @@
 #include <sstream>
 #include <cstdlib>
 #include "Knapsack.h"
+#include "AG.h"
 
 using namespace std;
 
@@ -23,9 +24,9 @@ void createProblem(vector<Knapsack> * kc, vector<string> fileslist);
 
 int main() {
 	vector<Knapsack> kc;
-    vector<string> fileslist;
+	vector<string> fileslist;
 	int capacity;
-	string arq = "knpconf/kc20.txt";
+	string arq = "/home/andre/Documentos/knpconf/kc20.txt";
 	ifstream readlist;
 	string lineRead;
 
@@ -42,10 +43,14 @@ int main() {
 	capacity = stoi(fileslist[1]);
 	createProblem(&kc, fileslist);
 
-    for (int i = 0; i < kc.size(); i++)
-    {
-        cout << kc[i].weight << endl;
-    }
+	for (int i = 0; i < kc.size(); i++) {
+		cout << kc[i].weight << endl;
+	}
+
+	clock_t clockBegin = clock();
+	double endTime = 60;
+	AG ag(kc, 100, clockBegin, endTime, capacity);
+	ag.run();
 
 	return 0;
 }

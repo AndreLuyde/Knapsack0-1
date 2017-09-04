@@ -9,27 +9,22 @@
 #define AG_H_
 
 #include "Solution.h"
+#include "Knapsack.h"
 
+#include <iostream>
 #include <list>
 #include <vector>
 #include <algorithm>
 #include <random>
 #include <chrono>
-using namespace std;
 
-struct Knapsack {
-	int label;
-	int value;
-	int weight;
-	vector<int> conflits;
-};
+
+using namespace std;
 
 class AG{
 
 public:
-	AG(vector<Knapsack> kc, int sizePopulation, clock_t timeBegin, double timeEnd);
-
-	virtual ~AG();
+	AG(vector<Knapsack> kc, int sizePopulation, clock_t timeBegin, double timeEnd, int capacity);
 
 	Solution crossing1Cut(Solution solution1, Solution solution2);
 	Solution crossing2Cut(Solution solution1, Solution solution2);
@@ -39,22 +34,9 @@ public:
 	bool checkConflits(Solution &solution);
 	Solution competition(Solution solution1, Solution solution2);
 	void evolucionaryClicle(vector<Solution> population, int sizePopulation);
+	void run();
+	Solution getBestSolution(vector<Solution> population);
 
-	int getCrossingProbability() const {
-		return crossingProbability;
-	}
-
-	void setCrossingProbability(int crossingProbability) {
-		this->crossingProbability = crossingProbability;
-	}
-
-	int getMutationProbability() const {
-		return mutationProbability;
-	}
-
-	void setMutationProbability(int mutationProbability) {
-		this->mutationProbability = mutationProbability;
-	}
 
 	int getSizePopulation() const {
 		return sizePopulation;
@@ -104,10 +86,26 @@ public:
 		this->beginTime = beginTime;
 	}
 
+	double getCrossingProbability() const {
+		return crossingProbability;
+	}
+
+	void setCrossingProbability(double crossingProbability) {
+		this->crossingProbability = crossingProbability;
+	}
+
+	double getMutationProbability() const {
+		return mutationProbability;
+	}
+
+	void setMutationProbability(double mutationProbability) {
+		this->mutationProbability = mutationProbability;
+	}
+
 private:
 	int sizePopulation;
-	int crossingProbability;
-	int mutationProbability;
+	double crossingProbability;
+	double mutationProbability;
 	int knapsackCapacity;
 	int generation = 0;
 	clock_t beginTime;
