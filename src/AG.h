@@ -28,14 +28,15 @@ public:
 
 	Solution crossing1Cut(Solution solution1, Solution solution2);
 	Solution crossing2Cut(Solution solution1, Solution solution2);
+	Solution mutation(Solution solution);
+	Solution competition(Solution solution1, Solution solution2);
+	Solution getBestSolution(vector<Solution> population);
 	vector<Solution> tournament(vector<Solution> population, vector<Solution> newSolutions, int sizePopulation);
 	int fitness(Solution &solution);
-	Solution mutation(Solution solution);
 	bool checkConflits(Solution &solution);
-	Solution competition(Solution solution1, Solution solution2);
 	void evolucionaryClicle(vector<Solution> population, int sizePopulation);
-	void run();
-	Solution getBestSolution(vector<Solution> population);
+	void run(Solution &solution);
+	void repairSolution(Solution &solution);
 
 
 	int getSizePopulation() const {
@@ -102,6 +103,14 @@ public:
 		this->mutationProbability = mutationProbability;
 	}
 
+	const Solution& getBest() const {
+		return best;
+	}
+
+	void setBest(const Solution& best) {
+		this->best = best;
+	}
+
 private:
 	int sizePopulation;
 	double crossingProbability;
@@ -111,6 +120,7 @@ private:
 	clock_t beginTime;
 	double endTime;
 	vector<Knapsack> kc;
+	Solution best;
 
 };
 

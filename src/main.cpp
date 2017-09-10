@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include "Knapsack.h"
 #include "AG.h"
+#include "BranchAndBound.h"
 
 using namespace std;
 
@@ -22,14 +23,18 @@ int getValue(vector<Knapsack> items);
 int getWeight(vector<Knapsack> items);
 void createProblem(vector<Knapsack> * kc, vector<string> fileslist);
 
-int main() {
+int main(int argc, char* argv[]) {
 	vector<Knapsack> kc;
 	vector<string> fileslist;
 	int capacity;
-	string arq = "/home/andre/Documentos/knpconf/kc20.txt";
+	string arq = argv[1];
+	double totalTime = stod(argv[2]);
+//	double totalTime = 60.0;
+//	string arq = "/home/andre/Documentos/knpconf/kc50.txt";
 	ifstream readlist;
 	string lineRead;
 
+//	leitura do arquivo com o problema
 	readlist.open(arq);
 
 	while (getline(readlist, lineRead)) {
@@ -43,34 +48,48 @@ int main() {
 	capacity = stoi(fileslist[1]);
 	createProblem(&kc, fileslist);
 
-	for (int i = 0; i < kc.size(); i++) {
-		cout << kc[i].weight << endl;
+	//Algoritmo Genetico
+	clock_t start = clock();
+	Solution solution;
+
+	AG ag(kc, 100, start, totalTime * 2/3, capacity);
+	ag.run(solution);
+
+	clock_t end = clock();
+	double finalTime = ((double) end - start) / ((double) CLOCKS_PER_SEC);
+	cout << finalTime << "s solution improved to:" << solution.getFitness() << " by heuristic" << endl;
+
+	//branch and bound
+	BranchAndBound bnb(kc, capacity, solution.getSolution(), solution.getFitness());
+	bnb.run(totalTime * 1/3, solution);
+
+	end = clock();
+	finalTime = ((double) end - start) / ((double) CLOCKS_PER_SEC);
+	cout << "search concluded. best: " << solution.getFitness() << " time: " << finalTime << "s complete search" << endl;
+
+	//contar itens solução
+	int countItens = 0;
+	for (int i = 0; i < solution.getSolution().size(); i++) {
+		if (solution.getSolution()[i]) {
+			countItens++;
+		}
 	}
 
-	clock_t clockBegin = clock();
-	double endTime = 60;
-	AG ag(kc, 100, clockBegin, endTime, capacity);
-	ag.run();
+	//escrever arquivo de saida
+	ofstream outfile;
+	outfile.open("sol.txt");
 
+	outfile << solution.getFitness() << endl;
+	outfile << countItens << endl;
+	for (int i = 0; i < solution.getSolution().size(); i++) {
+		if (solution.getSolution()[i]) {
+			outfile << i << endl;
+		}
+	}
+	outfile.close();
 	return 0;
 }
-
-int getWeight(vector<Knapsack> items) {
-	int totalWeight = 0;
-	for (int i = 0; i < items.size(); i++) {
-		totalWeight += items[i].weight;
-	}
-	return totalWeight;
-}
-
-int getValue(vector<Knapsack> items) {
-	int totalValue = 0;
-	for (int i = 0; i < items.size(); i++) {
-		totalValue += items[i].value;
-	}
-	return totalValue;
-}
-
+//cria lista com os dados lidos do arquivo
 void createProblem(vector<Knapsack> * kc, vector<string> fileslist) {
 	Knapsack item;
 
@@ -82,7 +101,7 @@ void createProblem(vector<Knapsack> * kc, vector<string> fileslist) {
 
 	//armazena valores
 	while (i < size) {
-		item.value = stoi(fileslist[count]);
+		item.profit = stoi(fileslist[count]);
 		count++;
 		i++;
 		kc->push_back(item);

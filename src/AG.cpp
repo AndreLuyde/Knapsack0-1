@@ -7,8 +7,7 @@
 
 #include "AG.h"
 
-AG::AG(vector<Knapsack> kc, int sizePopulation, clock_t beginTime,
-		double endTime, int capacity) {
+AG::AG(vector<Knapsack> kc, int sizePopulation, clock_t beginTime, double endTime, int capacity) {
 	setKc(kc);
 	setSizePopulation(sizePopulation);
 	setCrossingProbability(0.9);
@@ -18,10 +17,9 @@ AG::AG(vector<Knapsack> kc, int sizePopulation, clock_t beginTime,
 	setKnapsackCapacity(capacity);
 }
 
-void AG::run() {
+void AG::run(Solution &solution) {
 	//inicializa a população de forma randomica
-	vector<int> items;
-	Solution solution;
+	vector<bool> items;
 	vector<Solution> population;
 	for (int i = 0; i < getSizePopulation(); i++) {
 		items.clear();
@@ -35,10 +33,11 @@ void AG::run() {
 	}
 
 	evolucionaryClicle(population, getSizePopulation());
+	solution = getBest();
 }
-
+//ciclo evolucionario do algoritmo
 void AG::evolucionaryClicle(vector<Solution> population, int sizePopulation) {
-	double currentTime = 0;
+	double elapsedTime = 0;
 
 	//vetor para armazenar os filhos
 	vector<Solution> newSolutions;
@@ -50,8 +49,7 @@ void AG::evolucionaryClicle(vector<Solution> population, int sizePopulation) {
 	do {
 		newSolutions.clear();
 		while (newSolutions.size() < (sizePopulation / 3)) {
-			int seed =
-					std::chrono::system_clock::now().time_since_epoch().count();
+			int seed = std::chrono::system_clock::now().time_since_epoch().count();
 			static default_random_engine gen(seed);
 			normal_distribution<double> dist(0.0, 1.0);
 			double probability = dist(gen);
@@ -60,8 +58,7 @@ void AG::evolucionaryClicle(vector<Solution> population, int sizePopulation) {
 			if (probability < getCrossingProbability()) {
 				int rand1 = rand() % (population.size());
 				int rand2 = rand() % (population.size());
-				newSolutions.push_back(
-						crossing2Cut(population[rand1], population[rand2]));
+				newSolutions.push_back(crossing1Cut(population[rand1], population[rand2]));
 			}
 
 			//verifica a probabilidade de mutação
@@ -80,24 +77,31 @@ void AG::evolucionaryClicle(vector<Solution> population, int sizePopulation) {
 		population = tournament(population, newSolutions, sizePopulation);
 		setGeneration(getGeneration() + 1);
 
-		//Mostra melhor solução da geração
+		//Armazena e mostra melhor solução da geração
 		Solution best = getBestSolution(population);
-		for (int i = 0; i < best.getSolution().size(); i++) {
-			cout << best.getSolution()[i];
+		if (getGeneration() == 1) {
+			setBest(best);
+		} else {
+			if (best.getFitness() > getBest().getFitness()) {
+				setBest(best);
+				//Mostra a solução
+//				for (int i = 0; i < getBest().getSolution().size(); i++) {
+//					cout << best.getSolution()[i];
+//				}
+//				cout << " " << endl;
+//				cout << "Fitness: " << best.getFitness() << endl;
+			}
 		}
-		cout << " " << endl;
-		cout << "Fitness: " << best.getFitness() << endl;
 
 		//atualiza critério de parada
 		clock_t clockEnd = clock();
-		currentTime = ((double) clockEnd - getBeginTime())
-				/ ((double) CLOCKS_PER_SEC);
-	} while (currentTime < getEndTime()); //condição de tempo
+		elapsedTime = ((double) clockEnd - getBeginTime())/ ((double) CLOCKS_PER_SEC);
+	} while (elapsedTime < getEndTime()); //condição de tempo
 }
-
+//cruzamento de 1 corte
 Solution AG::crossing1Cut(Solution solution1, Solution solution2) {
 	int randNum = rand() % (solution1.getSolution().size());
-	vector<int> newSolution;
+	vector<bool> newSolution;
 	Solution solutionGenerated;
 	for (int i = 0; i < randNum; i++) {
 		newSolution.push_back(solution1.getSolution()[i]);
@@ -110,11 +114,11 @@ Solution AG::crossing1Cut(Solution solution1, Solution solution2) {
 	solutionGenerated.setFitness(0);
 	return solutionGenerated;
 }
-
+//cruzamento de 2 cortes
 Solution AG::crossing2Cut(Solution solution1, Solution solution2) {
 	int rand1 = rand() % (solution1.getSolution().size());
 	int rand2 = rand() % (solution2.getSolution().size());
-	vector<int> newSolution;
+	vector<bool> newSolution;
 	Solution solutionGenerated;
 	if (rand1 < rand2) {
 		for (int i = 0; i < rand1; i++) {
@@ -142,23 +146,22 @@ Solution AG::crossing2Cut(Solution solution1, Solution solution2) {
 	solutionGenerated.setFitness(0);
 	return solutionGenerated;
 }
-
+//mutação do indivíduo alterando cromossomo
 Solution AG::mutation(Solution solution) {
 	int randNum = rand() % (solution.getSolution().size());
-	vector<int> sol = solution.getSolution();
-	if (sol[randNum] == 0) {
-		sol[randNum] = 1;
+	vector<bool> sol = solution.getSolution();
+	if (!sol[randNum]) {
+		sol[randNum] = true;
 	} else {
-		sol[randNum] = 0;
+		sol[randNum] = false;
 	}
 	solution.setSolution(sol);
 	solution.setChecked(false);
 	solution.setFitness(0);
 	return solution;
 }
-
-vector<Solution> AG::tournament(vector<Solution> population,
-		vector<Solution> newSolutions, int sizePopulation) {
+//torneio para decidir quais individuos vão para a prócima geração
+vector<Solution> AG::tournament(vector<Solution> population, vector<Solution> newSolutions, int sizePopulation) {
 	vector<Solution> finalPopulation;
 	int rand1;
 	int rand2;
@@ -171,14 +174,13 @@ vector<Solution> AG::tournament(vector<Solution> population,
 		rand1 = rand() % (population.size());
 		rand2 = rand() % (population.size());
 		if (!population[rand1].isChecked() && !population[rand2].isChecked()) {
-			finalPopulation.push_back(
-					competition(population[rand1], population[rand2]));
+			finalPopulation.push_back(competition(population[rand1], population[rand2]));
 			countPopularion++;
 		}
 	}
 	return finalPopulation;
 }
-
+//verifica qual solução é melhor
 Solution AG::competition(Solution solution1, Solution solution2) {
 	if (solution1.getFitness() != 0) {
 		if (solution2.getFitness() != 0) {
@@ -207,48 +209,72 @@ Solution AG::competition(Solution solution1, Solution solution2) {
 		return solution2;
 	}
 }
-
+//calcula o valor fitness(lucro) da solução
 int AG::fitness(Solution &solution) {
+	if (checkConflits(solution)) {
+		repairSolution(solution);
+	}
 	int fitness = 0;
 	int totalWeight = 0;
-	vector<int> sol = solution.getSolution();
+	vector<bool> sol = solution.getSolution();
 	for (int i = 0; i < sol.size(); i++) {
-		if (sol[i] == 1) {
-			fitness += getKc()[i].value;
+		if (sol[i]) {
+			fitness += getKc()[i].profit;
 			totalWeight += getKc()[i].weight;
 		}
 	}
 
 	//verificar viabilidade
 	if (totalWeight > getKnapsackCapacity()) {
-		solution.setFitness(fitness - 100000000);
+		solution.setFitness(fitness - 10000000);
 	} else if (checkConflits(solution)) {
-		solution.setFitness(fitness - 100000000);
+		solution.setFitness(fitness - 10000000);
 	} else {
 		solution.setFitness(fitness);
 	}
 	return fitness;
 }
-
+//repara a solução removendo os conflitos
+void AG::repairSolution(Solution &solution) {
+	vector<bool> sol = solution.getSolution();
+	int repair = rand() % (2);
+	if (repair) {
+		for (int i = 0; i < sol.size(); i++) {
+			if (sol[i]) {
+				for (int j = 0; j < getKc()[i].conflits.size(); j++) {
+					sol[getKc()[i].conflits[j]] = 0;
+				}
+			}
+		}
+	} else {
+		for (int i = sol.size() - 1; i > 1; i--) {
+			if (sol[i]) {
+				for (int j = 0; j < getKc()[i].conflits.size(); j++) {
+					sol[getKc()[i].conflits[j]] = 0;
+				}
+			}
+		}
+	}
+	solution.setSolution(sol);
+}
+//verifica se a solução possui conflitos
 bool AG::checkConflits(Solution &solution) {
 	bool avaliable = false;
-	for (int i = 0; i < solution.getSolution().size(); i++) {
-		if (solution.getSolution()[i] == 1) {
+	vector<bool> sol = solution.getSolution();
+
+	for (int i = 0; i < sol.size(); i++) {
+		if (sol[i]) {
 			for (int j = 0; j < getKc()[i].conflits.size(); j++) {
-				for (int k = 0; k < solution.getSolution().size(); k++) {
-					if (solution.getSolution()[k] == 1) {
-						if (k == getKc()[i].conflits[j]) {
-							avaliable = true;
-							return true;
-						}
-					}
+				if (sol[getKc()[i].conflits[j]]) {
+					avaliable = true;
+					return true;
 				}
 			}
 		}
 	}
 	return avaliable;
 }
-
+//retorna a melhor solução
 Solution AG::getBestSolution(vector<Solution> population) {
 	Solution best = population[0];
 	int fitness = population[0].getFitness();

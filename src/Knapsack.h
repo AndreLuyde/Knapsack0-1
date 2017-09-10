@@ -13,7 +13,7 @@ using namespace std;
 class Knapsack {
 public:
 	int label;
-	int value;
+	int profit;
 	int weight;
 	vector<int> conflits;
 };

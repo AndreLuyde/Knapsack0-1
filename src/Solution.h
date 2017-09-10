@@ -28,11 +28,11 @@ public:
 		this->fitness = fitness;
 	}
 
-	const vector<int>& getSolution() const {
+	const vector<bool>& getSolution() const {
 		return solution;
 	}
 
-	void setSolution(const vector<int>& solution) {
+	void setSolution(const vector<bool>& solution) {
 		this->solution = solution;
 	}
 
@@ -45,7 +45,7 @@ public:
 	}
 
 private:
-	vector<int> solution;
+	vector<bool> solution;
 	int fitness;
 	bool checked;
 };
