@@ -12,15 +12,15 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+
 #include "Knapsack.h"
 #include "AG.h"
 #include "BranchAndBound.h"
+#include "Solution.h"
 
 using namespace std;
 
 //funções
-int getValue(vector<Knapsack> items);
-int getWeight(vector<Knapsack> items);
 void createProblem(vector<Knapsack> * kc, vector<string> fileslist);
 
 int main(int argc, char* argv[]) {
@@ -29,8 +29,8 @@ int main(int argc, char* argv[]) {
 	int capacity;
 	string arq = argv[1];
 	double totalTime = stod(argv[2]);
-//	double totalTime = 60.0;
-//	string arq = "/home/andre/Documentos/knpconf/kc50.txt";
+//	double totalTime = 300.0;
+//	string arq = "/home/andre/Documentos/knpconf/kc5000.txt";
 	ifstream readlist;
 	string lineRead;
 
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
 	clock_t start = clock();
 	Solution solution;
 
-	AG ag(kc, 100, start, totalTime * 2/3, capacity);
+	AG ag(kc, 100, start, totalTime * 1/6, capacity);
 	ag.run(solution);
 
 	clock_t end = clock();
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 
 	//branch and bound
 	BranchAndBound bnb(kc, capacity, solution.getSolution(), solution.getFitness());
-	bnb.run(totalTime * 1/3, solution);
+	bnb.run(totalTime * 5/6, solution);
 
 	end = clock();
 	finalTime = ((double) end - start) / ((double) CLOCKS_PER_SEC);
@@ -69,7 +69,8 @@ int main(int argc, char* argv[]) {
 
 	//contar itens solução
 	int countItens = 0;
-	for (int i = 0; i < solution.getSolution().size(); i++) {
+	int sizeSolution = solution.getSolution().size();
+	for (int i = 0; i < sizeSolution; i++) {
 		if (solution.getSolution()[i]) {
 			countItens++;
 		}
@@ -81,7 +82,8 @@ int main(int argc, char* argv[]) {
 
 	outfile << solution.getFitness() << endl;
 	outfile << countItens << endl;
-	for (int i = 0; i < solution.getSolution().size(); i++) {
+	sizeSolution = solution.getSolution().size();
+	for (int i = 0; i < sizeSolution; i++) {
 		if (solution.getSolution()[i]) {
 			outfile << i << endl;
 		}
@@ -116,7 +118,8 @@ void createProblem(vector<Knapsack> * kc, vector<string> fileslist) {
 	}
 
 	//armazena conflitos
-	for (int j = 0; j < kc->size(); j++) {
+	int sizeKc = kc->size();
+	for (int j = 0; j < sizeKc; j++) {
 		i = 0;
 		int numConflits = stoi(fileslist[count]);
 		count++;

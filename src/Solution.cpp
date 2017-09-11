@@ -5,14 +5,5 @@
  *      Author: andre
  */
 
-#include "Solution.h"
-
-Solution::Solution() {
-
-}
-
-Solution::~Solution() {
-	// TODO Auto-generated destructor stub
-}
 
 

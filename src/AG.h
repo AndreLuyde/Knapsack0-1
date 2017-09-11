@@ -35,8 +35,8 @@ public:
 	int fitness(Solution &solution);
 	bool checkConflits(Solution &solution);
 	void evolucionaryClicle(vector<Solution> population, int sizePopulation);
-	void run(Solution &solution);
 	void repairSolution(Solution &solution);
+	void run(Solution &solution);
 
 
 	int getSizePopulation() const {

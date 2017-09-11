@@ -16,9 +16,6 @@ using namespace std;
 class Solution{
 
 public:
-	Solution();
-
-	virtual ~Solution();
 
 	int getFitness() const {
 		return fitness;

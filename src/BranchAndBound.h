@@ -23,11 +23,12 @@
 using namespace std;
 
 class BranchAndBound {
-public:
-    vector<bool> solSpace;
 
+public:
     BranchAndBound(vector<Knapsack> kc, int cap, vector<bool> solSpc, int profit);
+
     void run(double enTime, Solution &solution);
+    vector<bool> solSpace;
 
 private:
     vector<Knapsack> problem;
